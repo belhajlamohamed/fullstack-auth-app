@@ -1,49 +1,50 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Register from './pages/Register';
-import Login from './pages/Login';
-import ChangePassword from './pages/ChangePassword';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import Dashboard from './pages/Dashboard';
+import ProtectedRoute from './components/ProtectedRoute';
+// Import des composants d'authentification
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
+import ChangePassword from './pages/auth/ChangePassword';
+// import Logout from './pages/auth/Logout';
 
-
-// --- LE COMPOSANT PROTECTED ROUTE ---
-// On le définit ici pour qu'il soit disponible pour toutes les routes
-const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  
-  // Si le token n'existe pas, on redirige vers le login
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  // Si le token existe, on affiche le composant enfant (le Dashboard)
-  return children;
-};
+// Import du Dashboard principal
+import RoleBasedDashboard from './pages/dashboard/RoleBasedDashboard';
 
 function App() {
-
- 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
-        <Routes>
-          {/* Route pour l'inscription */}
-          <Route path="/register" element={<Register />} />
+      {/* Styles globaux pour assurer la cohérence du design (Noir/Violet) */}
+    
 
-          
-          <Route path="/" element={<Navigate to="/register" />} />
+      <div className="min-h-screen bg-[#0a0a0c]">
+        <Routes>
+          {/* --- ROUTES AUTHENTIFICATION --- */}
           <Route path="/login" element={<Login />} />
-          <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          {/* <Route path="/dashboard" element={<Dashboard />} /> */}
-          <Route path="/dashboard" element={<ProtectedRoute>
-                       <Dashboard />
-            </ProtectedRoute>} 
-            />
+           <Route path="/change-password" element={<ChangePassword />} />
+          {/* <Route path="/logout" element={<Logout />} /> */}
+
+          {/* --- ROUTE PRINCIPALE (DASHBOARD) --- */}
           
-          {/* Tu ajouteras tes autres routes ici plus tard (Login, Dashboard...) */}
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <RoleBasedDashboard />
+            </ProtectedRoute>
+          } 
+        />
+
+          {/* --- REDIRECTIONS PAR DÉFAUT --- */}
+          {/* Si l'utilisateur arrive sur la racine, on le dirige vers le Login */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          
+          {/* Capture les erreurs 404 et redirige vers login */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </div>
     </Router>

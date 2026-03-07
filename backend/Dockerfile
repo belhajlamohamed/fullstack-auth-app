@@ -1,31 +1,30 @@
-# Base Python légère
+# Utilisation d'une image Python légère
 FROM python:3.11-slim
 
-# ⚡ Éviter les fichiers pyc et activer output immédiat
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# Définir le répertoire de travail
+# Définition du dossier de travail
 WORKDIR /app
 
-# Installer dépendances système nécessaires pour PostgreSQL et compilation
-RUN apt-get update && apt-get install -y \
+# Empêcher Python de générer des fichiers .pyc et forcer l'affichage des logs
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Installation des dépendances système pour PostgreSQL (psycopg2)
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
-    build-essential \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copier uniquement requirements pour accélérer le build Docker
+# Installation des dépendances Python
 COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
-# Installer les dépendances Python
-RUN pip install --no-cache-dir -r requirements.txt
+# Copie du code source
+COPY . .
 
-# Copier le code de l'application (le volume le remplacera en DEV)
-COPY ./app ./app
-
-# Exposer le port FastAPI
+# Exposition du port FastAPI
 EXPOSE 8000
 
-# Commande par défaut pour DEV avec reload
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Lancement de l'application
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

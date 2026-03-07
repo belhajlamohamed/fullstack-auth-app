@@ -2,7 +2,9 @@ from fastapi import FastAPI, Depends, HTTPException
 # from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from . import models, schemas, auth, database
+
+from .. import auth
+from . import models, schemas, database
 
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -31,7 +33,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from .mail import send_verification_email,send_reset_password_email
+from ..mail import send_verification_email,send_reset_password_email
 
 @app.post("/register")
 async def register(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
