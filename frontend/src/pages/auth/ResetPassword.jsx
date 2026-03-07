@@ -1,59 +1,134 @@
-import React from "react";
-import { Lock, CheckCircle2, ArrowRight } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Lock, ArrowRight, Loader2, AlertCircle, CheckCircle2, ShieldAlert } from "lucide-react";
 
-export default function PasswordReset() {
+export default function ResetPassword() {
+  const [formData, setFormData] = useState({
+    password: "",
+    confirmPassword: ""
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  // Extraction du token depuis l'URL
+  const queryParameters = new URLSearchParams(window.location.search);
+  const token = queryParameters.get("token");
+
+  useEffect(() => {
+    if (!token) {
+      setError("Le jeton de sécurité est manquant dans l'URL.");
+    }
+  }, [token]);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (error) setError("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (formData.password !== formData.confirmPassword) {
+      return setError("Les mots de passe ne correspondent pas.");
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      /** * D'après ta capture Swagger (392) :
+       * 1. new_password est requis en QUERY string (?new_password=...)
+       * 2. Le BODY JSON attend { "token": "string", "new_password": "string" }
+       */
+      const response = await axios.post(
+        `http://127.0.0.1:8000/users/reset-password?new_password=${encodeURIComponent(formData.password)}`, 
+        {
+          token: token,
+          new_password: formData.password // Utilisation de snake_case comme vu sur Swagger
+        }
+      );
+
+      if (response.status === 200 || response.status === 201) {
+        setIsSuccess(true);
+        setTimeout(() => window.location.href = "/login", 3000);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Échec de la réinitialisation (Lien expiré ou invalide)");
+      console.error("Détails de l'erreur API:", err.response?.data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0c] p-4 text-white relative">
-      <div className="w-full max-w-md backdrop-blur-2xl bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-10 space-y-8 relative z-10 shadow-2xl">
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-black uppercase italic tracking-tighter">Nouveau mot de passe</h1>
-          <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest leading-relaxed">Définit ton nouvel accès sécurisé</p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0c] p-4 text-white relative overflow-hidden font-sans">
+      {/* Background Glows */}
+      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#673ee5]/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#cbff00]/10 blur-[120px] rounded-full pointer-events-none" />
 
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Nouveau mot de passe</label>
-            <div className="relative group">
-              <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#673ee5]" />
-              <input type="password" placeholder="••••••••••••" className="w-full bg-[#121214] border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-[#673ee5] transition-all" />
+      <div className="w-full max-w-md backdrop-blur-2xl bg-white/[0.03] border border-white/10 rounded-[3rem] p-8 md:p-12 space-y-8 relative z-10 shadow-2xl">
+        
+        {isSuccess ? (
+          <div className="text-center space-y-6 animate-in zoom-in duration-300">
+            <div className="w-20 h-20 bg-[#cbff00]/10 border border-[#cbff00]/20 rounded-full flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(203,255,0,0.1)]">
+              <CheckCircle2 size={40} className="text-[#cbff00]" />
             </div>
+            <h2 className="text-2xl font-black uppercase italic tracking-tighter">Mot de passe mis à jour</h2>
+            <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Redirection vers la connexion...</p>
           </div>
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Confirmer le mot de passe</label>
-            <div className="relative group">
-              <CheckCircle2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#cbff00]" />
-              <input type="password" placeholder="••••••••••••" className="w-full bg-[#121214] border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-[#cbff00] transition-all" />
+        ) : (
+          <>
+            <div className="text-center space-y-3">
+              <div className="w-16 h-16 bg-[#673ee5]/20 border border-[#673ee5]/30 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+                <ShieldAlert size={28} className="text-[#673ee5]" />
+              </div>
+              <h1 className="text-3xl font-black uppercase tracking-tighter leading-tight">Nouveau <br/> Mot de Passe</h1>
             </div>
-          </div>
-        </div>
 
-        <button className="w-full bg-gradient-to-r from-[#673ee5] to-[#cbff00] text-white font-black py-4 rounded-2xl hover:scale-[1.02] transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2">
-          Réinitialiser mon accès <ArrowRight size={18}/>
-        </button>
+            {error && (
+              <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest animate-shake">
+                <AlertCircle size={18} /> {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Nouveau mot de passe</label>
+                  <div className="relative group">
+                    <Lock size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-[#673ee5] transition-colors" />
+                    <input 
+                      required name="password" type="password" value={formData.password} onChange={handleChange}
+                      placeholder="••••••••••••" 
+                      className="w-full bg-white/[0.02] border border-white/10 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-[#673ee5] transition-all text-sm font-bold text-white" 
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Confirmation</label>
+                  <div className="relative group">
+                    <Lock size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-[#673ee5] transition-colors" />
+                    <input 
+                      required name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange}
+                      placeholder="Confirmez le mot de passe" 
+                      className="w-full bg-white/[0.02] border border-white/10 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-[#673ee5] transition-all text-sm font-bold text-white" 
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                disabled={loading || !token}
+                className="w-full bg-[#cbff00] text-black font-black py-5 rounded-[2rem] shadow-xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-3 disabled:opacity-50"
+              >
+                {loading ? <Loader2 size={20} className="animate-spin" /> : <>Réinitialiser <ArrowRight size={20}/></>}
+              </button>
+            </form>
+          </>
+        )}
       </div>
     </div>
   );
 }
-
-
-// import React from "react";
-// import { Lock, ShieldCheck } from "lucide-react";
-
-// export default function ResetPassword() {
-//   return (
-//     <div className="min-h-screen flex items-center justify-center bg-[#0a0a0c] text-white p-4">
-//       <div className="bg-white/5 border border-white/10 p-8 rounded-3xl w-full max-w-md space-y-6">
-//         <div className="text-center">
-//           <h2 className="text-2xl font-bold">Nouveau mot de passe</h2>
-//         </div>
-//         <div className="space-y-4">
-//           <input type="password" placeholder="Nouveau mot de passe" className="w-full px-4 py-3 bg-black border border-white/10 rounded-xl outline-none focus:border-purple-500" />
-//           <input type="password" placeholder="Confirmer le mot de passe" className="w-full px-4 py-3 bg-black border border-white/10 rounded-xl outline-none focus:border-purple-500" />
-//         </div>
-//         <button className="w-full bg-[#cbff00] text-black font-bold py-3 rounded-xl flex items-center justify-center gap-2">
-//           Mettre à jour <ShieldCheck size={18} />
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
