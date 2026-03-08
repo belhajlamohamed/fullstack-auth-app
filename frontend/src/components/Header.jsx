@@ -12,7 +12,7 @@ export default function Header({ setIsMobileOpen, userName = "Utilisateur" }) {
   const roleLabel = rawRole.toLowerCase() === "teacher" ? "Enseignant" : "Élève";
 
   return (
-    <header className="h-20 px-6 flex items-center justify-between bg-[#0a0a0c]/40 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40 transition-all">
+    <header className="h-20 px-6 flex items-center justify-between bg-[#0a0a0c]/40 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 transition-all">
       
       {/* GAUCHE : Burger (Mobile) + Recherche (Desktop) */}
       <div className="flex items-center gap-4 flex-1">
