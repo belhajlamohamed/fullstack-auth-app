@@ -1,15 +1,16 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React from "react";
+import { Navigate } from "react-router-dom";
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("access_token");
+  // On vérifie si l'utilisateur est connecté (exemple via localStorage)
+  // const isAuthenticated = localStorage.getItem("userRole"); 
+  const token = localStorage.getItem('access_token')
 
-  // Si pas de token, on redirige vers le login
   if (!token) {
+    // Si pas de rôle, on redirige vers le login
     return <Navigate to="/login" replace />;
   }
 
-  // Si le token existe, on affiche le composant enfant (le Dashboard)
   return children;
 };
 
