@@ -1,7 +1,16 @@
 import React from "react";
 import { Menu, Search, Bell, User, ChevronDown } from "lucide-react";
 
+
 export default function Header({ setIsMobileOpen, userName = "Utilisateur" }) {
+
+
+  // On récupère le rôle pour adapter l'affichage sous le nom
+  const rawRole = localStorage.getItem("userRole") || "student";
+  
+  // On crée un libellé propre (Enseignant ou Élève)
+  const roleLabel = rawRole.toLowerCase() === "teacher" ? "Enseignant" : "Élève";
+
   return (
     <header className="h-20 px-6 flex items-center justify-between bg-[#0a0a0c]/40 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40 transition-all">
       
@@ -49,7 +58,7 @@ export default function Header({ setIsMobileOpen, userName = "Utilisateur" }) {
               {userName}
             </p>
             <p className="text-[9px] text-[#cbff00] font-bold uppercase tracking-widest mt-1 opacity-80">
-              Enseignant
+              {roleLabel}
             </p>
           </div>
 
