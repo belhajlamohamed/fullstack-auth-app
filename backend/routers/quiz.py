@@ -76,7 +76,7 @@ def generate_quiz_ai(
 
 
 # --- Récupérer TOUS les quiz (pour la page d'accueil) ---
-@router.get("/", response_model=List[schemas.QuizResponse])
+@router.get("/all", response_model=List[schemas.QuizResponse])
 def get_all_quizzes(db: Session = Depends(database.get_db)):
     return db.query(models.Quiz).all()
 
@@ -270,7 +270,4 @@ def submit_quiz(
             "result_id": new_result.id,
             "date": new_result.created_at
          }
-
-
-
 

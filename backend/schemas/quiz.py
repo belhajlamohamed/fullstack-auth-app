@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 
+
 # --- OPTIONS ---
 class OptionBase(BaseModel):
     text: str
@@ -138,3 +139,26 @@ class QuizOut(BaseModel):
     
     # ... le reste
     model_config = {"from_attributes": True}
+
+
+
+# ... tes autres schémas (QuizCreate, QuestionSchema, etc.)
+
+
+
+class TeacherStats(BaseModel):
+    total_quizzes: int
+    total_students: int
+    average_score: float
+    active_now: int
+
+    class Config:
+        from_attributes = True
+
+class StudentStats(BaseModel):
+    completed: int
+    avg_score: float
+    points: int
+    
+    class Config:
+        from_attributes = True

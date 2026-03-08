@@ -5,6 +5,7 @@ import TeacherHome from "../views/teacher/TeacherHome";
 import TeacherQuizzes from "../views/teacher/TeacherQuizzes";
 import StudentHome from "../views/student/StudentHome";
 import { getUserRole, getUsername } from '../utils/auth'
+import StudentExplore from "../views/student/StudentExplore";
 
 export default function Dashboard() {
   // On récupère le rôle et on le transforme immédiatement en minuscules pour la logique
@@ -39,7 +40,7 @@ export default function Dashboard() {
     if (role === "student") {
       switch (activeView) {
         case "home": return <StudentHome />;
-        case "explore": return <div className="p-10 text-2xl font-black italic uppercase">Explorer les Quiz</div>;
+        case "explore": return <StudentExplore />;
         case "results": return <div className="p-10 text-2xl font-black italic uppercase">Mes Résultats</div>;
         case "profile": return <div className="p-10 text-2xl font-black italic uppercase">Mon Profil</div>;
         default: return <StudentHome />;
