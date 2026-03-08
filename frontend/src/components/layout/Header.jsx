@@ -3,7 +3,8 @@ import { Menu, Search, Bell, User, ChevronDown } from "lucide-react";
 
 
 export default function Header({ setIsMobileOpen, userName = "Utilisateur" }) {
-
+  // On récupère la première lettre (ex: "A" pour "Abdel")
+  const initial = userName.charAt(0).toUpperCase();
 
   // On récupère le rôle pour adapter l'affichage sous le nom
   const rawRole = localStorage.getItem("userRole") || "student";
@@ -58,7 +59,7 @@ export default function Header({ setIsMobileOpen, userName = "Utilisateur" }) {
               {userName}
             </p>
             <p className="text-[9px] text-[#cbff00] font-bold uppercase tracking-widest mt-1 opacity-80">
-              {roleLabel}
+              {initial}
             </p>
           </div>
 

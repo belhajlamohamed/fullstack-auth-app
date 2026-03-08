@@ -2,13 +2,13 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 // Import des pages
-import Login from './pages/auth/Login'
-import Register from "./pages/auth/Register";
-import ForgotPassword from "./pages/auth/ForgotPassword";
-import ResetPassword from "./pages/auth/ResetPassword";
-import ChangePassword from "./pages/auth/ChangePassword";
-import Dashboard from "./pages/dashboard/Dashboard";
-import ProtectedRoute from "./components/ProtectedRoute";
+import Login from './views/Login'
+import Register from "./views/Register";
+import ForgotPassword from "./views/ForgotPassword";
+import ResetPassword from "./views/ResetPassword";
+import ChangePassword from "./views/ChangePassword";
+import Dashboard from "./views/Dashboard";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 function App() {
   return (

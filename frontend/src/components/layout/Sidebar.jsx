@@ -3,13 +3,14 @@ import {
   Home, Layout, BarChart3, User, 
   ChevronLeft, ChevronRight, X, LogOut, BookOpen, GraduationCap 
 } from "lucide-react";
+import { logout, getUserRole } from "../../utils/auth";
 
 export default function Sidebar({ 
   activeView, setActiveView, isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen 
 }) {
-  
-  const rawRole = localStorage.getItem("userRole") || "student";
-  const userRole = rawRole.toUpperCase();
+
+  // On récupère le rôle proprement via l'utilitaire
+  const userRole = (getUserRole() || "student").toUpperCase();
 
   const menuConfig = [
     { id: "home", label: "Dashboard", icon: <Home size={22} />, roles: ["TEACHER", "STUDENT"] },
@@ -20,13 +21,10 @@ export default function Sidebar({
     { id: "profile", label: "Mon Profil", icon: <User size={22} />, roles: ["TEACHER", "STUDENT"] },
   ];
 
+
   const filteredMenu = menuConfig.filter(item => item.roles.includes(userRole));
-
-
-    const handleLogout = () => {
-    localStorage.clear();
-    window.location.href = "/login";
-  };
+  
+ 
 
   return (
     <>
@@ -97,7 +95,7 @@ export default function Sidebar({
         {/* LOGOUT */}
         <div className="p-4 border-t border-white/5">
           <button 
-          onClick={handleLogout}
+          onClick={logout}
           className={`w-full flex items-center text-red-500/70 hover:text-red-500 py-3 rounded-xl transition-all ${isCollapsed ? "justify-center" : "px-4 gap-4"}`}>
             <LogOut size={20} />
             {!isCollapsed && <span className="font-bold uppercase text-[10px] tracking-widest">Quitter</span>}
