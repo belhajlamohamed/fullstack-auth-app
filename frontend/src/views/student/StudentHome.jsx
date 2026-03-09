@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import { BookOpen, Award, Zap, Activity, Loader2, ArrowUpRight, Play } from "lucide-react";
 import api from "../../api/axios";
 
+import { MathRenderer } from "../../components/MathRenderer";
+
 // On réutilise le même design de carte que pour le Teacher pour garder l'unité visuelle
 const StatCard = ({ title, value, icon, loading }) => (
   <div className="bg-[#111114] border border-white/[0.05] p-6 rounded-[2rem] hover:border-[#cbff00]/20 transition-all duration-300 group">
@@ -39,6 +41,12 @@ export default function StudentHome() {
     fetchStudentStats();
   }, []);
 
+  // AJOUT POUR LE TEST : Une donnée factice contenant du LaTeX
+  const testQuiz = {
+    title: "Continuité de $f(x) = \\sqrt{x}$",
+    description: "Étude des limites en $x \\to 0^+$"
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* HEADER ÉTUDIANT */}
@@ -65,6 +73,19 @@ export default function StudentHome() {
         </button>
         {/* Déco abstraite */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+      </div>
+
+      {/* SECTION DE TEST LATEX */}
+      <div className="mt-10 p-8 bg-[#111114] border border-white/[0.05] rounded-[2rem]">
+        <h2 className="text-[#cbff00] text-[10px] font-bold uppercase tracking-[0.2em] mb-4">Test Rendu LaTeX</h2>
+        <div className="space-y-2">
+          <p className="text-2xl font-black text-white italic">
+            <MathRenderer text={testQuiz.title} />
+          </p>
+          <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">
+            <MathRenderer text={testQuiz.description} />
+          </p>
+        </div>
       </div>
     </div>
   );
