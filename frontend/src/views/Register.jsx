@@ -28,6 +28,7 @@ export default function Register() {
     try {
       // Appel au backend sur le port 8000
       const response = await axios.post("http://localhost:8000/users/register", formData);
+      console.log("DONNEES RECUES: ", response.data)
 
       if (response.status === 201 || response.status === 200) {
         setIsSubmitted(true);

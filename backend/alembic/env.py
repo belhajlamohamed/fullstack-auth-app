@@ -1,11 +1,20 @@
-import models  # Importe tes modèles SQLAlchemy
-from database import Base  # Importe la Base de données
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
+
+import sys
+from os.path import abspath, dirname
+
+
+# Ajoute le chemin de ton dossier backend pour que Python trouve tes fichiers
+sys.path.insert(0, abspath(dirname(dirname(__file__))))
+
+from database import Base  # Importe ta Base SQLAlchemy
+import models              # Importe tes modèles (User, Subject, etc.)
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
