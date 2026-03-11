@@ -18,18 +18,21 @@ async def get_teacher_stats(
     if current_user.role.lower() != "teacher":
         raise HTTPException(status_code=403, detail="Accès réservé aux enseignants")
 
-    # Nombre de quiz créés par ce prof
-    total_quizzes = db.query(models.Quiz).filter(models.Quiz.teacher_id == current_user.id).count()
-    
-    # Nombre total de participations à ses quiz
+   # Remplacer les lignes concernées par celles-ci :
+
+    # Dans get_teacher_stats :
+    total_quizzes = db.query(models.Quiz).filter(models.Quiz.creator_id == current_user.id).count()
+
     total_participations = db.query(models.Result).join(models.Quiz).filter(
-        models.Quiz.teacher_id == current_user.id
+        models.Quiz.creator_id == current_user.id
     ).count()
-    
-    # Score moyen sur tous ses quiz
+
     avg_score = db.query(func.avg(models.Result.score)).join(models.Quiz).filter(
-        models.Quiz.teacher_id == current_user.id
+        models.Quiz.creator_id == current_user.id
     ).scalar() or 0.0
+
+    # Dans get_my_quizzes :
+    quizzes = db.query(models.Quiz).filter(models.Quiz.creator_id == current_user.id).all()
 
     return {
         "total_quizzes": total_quizzes,

@@ -27,6 +27,7 @@ class Quiz(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
+    topic = Column(String, nullable=True)  # <-- Ajout du champ topic
     description = Column(String, nullable=True)
     subject_id = Column(Integer, ForeignKey("subjects.id"), nullable=False, default=1)
     difficulty = Column(Enum(DifficultyEnum), nullable=False, default=DifficultyEnum.beginner)

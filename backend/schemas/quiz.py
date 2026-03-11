@@ -142,6 +142,8 @@ class QuizOut(BaseModel):
 
 
 
+
+
 # ... tes autres schémas (QuizCreate, QuestionSchema, etc.)
 
 

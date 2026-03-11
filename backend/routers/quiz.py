@@ -23,58 +23,52 @@ def get_subjects(db: Session = Depends(database.get_db)):
     subjects = db.query(models.Subject).all()
     return subjects
 
-
-@router.post("/generate", response_model=QuizOut)
+@router.post("/generate", response_model=schemas.QuizOut)
 def generate_quiz_ai(
     topic: str, 
     creator_id: int, 
-    difficulty: str = "Intermédiaire", 
+    difficulty: str = "intermediate", 
     db: Session = Depends(database.get_db)
 ):
-    """
-    Endpoint qui appelle Gemini, structure les données et les enregistre en base.
-    """
-    # 1. Appel à l'IA dans tools.py
     try:
         ai_data = call_gemini_ai(topic, difficulty)
     except Exception as e:
-        # Gestion des erreurs (ex: Rate Limit 429 de Gemini)
-        raise HTTPException(status_code=429, detail="L'IA est saturée. Réessayez dans une minute.")
-    # 2. Création de l'objet Quiz (Parent)
+        raise HTTPException(status_code=500, detail=f"Erreur IA : {str(e)}")
+
+    # Création du Quiz
     new_quiz = models.Quiz(
         title=ai_data.title,
         description=f"Quiz {difficulty} généré sur le thème : {topic}",
-        creator_id=creator_id
+        creator_id=creator_id,
+        subject_id=1 # Assure-toi que cet ID existe ou demande-le en paramètre
     )
     db.add(new_quiz)
-    db.flush()  # Pour obtenir l'ID de new_quiz avant le commit final
-    # 3. Itération sur les questions générées par l'IA
-    for q_data in ai_data.questions:
-        new_question = models.Question(
-            text=q_data.question_text,
-            quiz_id=new_quiz.id
-        )
-        db.add(new_question)
-        db.flush() # Pour obtenir l'ID de la question pour les options
-
-        # 4. Itération sur les options de chaque question
-        for idx, opt_text in enumerate(q_data.options):
-            is_correct = (idx == q_data.correct_answer_index)
-            new_option = models.Option(
-                text=opt_text,
-                is_correct=is_correct,
-                question_id=new_question.id
+    
+    try:
+        db.flush() 
+        for q_data in ai_data.questions:
+            new_question = models.Question(
+                text=q_data.question_text,
+                quiz_id=new_quiz.id
             )
-            db.add(new_option)
+            db.add(new_question)
+            db.flush() 
 
-    # 5. Commit final pour sauvegarder toute la structure
-    db.commit()
-    db.refresh(new_quiz)
+            for idx, opt_text in enumerate(q_data.options):
+                is_correct = (idx == q_data.correct_answer_index)
+                new_option = models.Option(
+                    text=opt_text,
+                    is_correct=is_correct,
+                    question_id=new_question.id
+                )
+                db.add(new_option)
 
-    return new_quiz
-
-
-
+        db.commit()
+        db.refresh(new_quiz)
+        return new_quiz
+    except Exception as e:
+        db.rollback() # Annule tout si une erreur survient
+        raise HTTPException(status_code=500, detail="Erreur d'enregistrement en base")
 # --- Récupérer TOUS les quiz (pour la page d'accueil) ---
 @router.get("/all", response_model=List[schemas.QuizResponse])
 def get_all_quizzes(db: Session = Depends(database.get_db)):
