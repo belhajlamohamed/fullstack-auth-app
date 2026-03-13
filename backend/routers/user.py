@@ -15,6 +15,7 @@ from auth import hash_password, verify_password, create_access_token, get_curren
 from mail import send_verification_email,send_reset_password_email
 from fastapi.security import OAuth2PasswordRequestForm
 
+
 from dotenv import load_dotenv
 
 # Chargement des variables d'environnement depuis le fichier .env
@@ -104,7 +105,7 @@ def verify_email(token: str, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     
-    user.is_active = True
+    user.is_email_verified = True
     db.commit()
     
     return {"message": "Votre compte a été activé avec succès !"}
@@ -113,6 +114,7 @@ def verify_email(token: str, db: Session = Depends(get_db)):
 
 @router.post("/login")
 def login(
+    # user_data: OAuth2PasswordRequestForm = Depends(),
     user_data: schemas.UserLogin, # On attend maintenant du JSON (UserLogin)
     db: Session = Depends(get_db)
 ):
@@ -136,7 +138,6 @@ def login(
                 "is_active": user.is_active
                 }
         }
-
 
 @router.post("/forgot-password")
 async def forgot_password(

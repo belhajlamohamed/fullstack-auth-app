@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import user_router, quiz_router,student,teacher
+from routers import user_router, quiz_router,student_router,teacher_router,secretaire_router
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import engine, Base
@@ -22,8 +22,9 @@ app.add_middleware(
 # On inclut les routes du fichier auth.py
 app.include_router(user_router)
 app.include_router(quiz_router)
-app.include_router(teacher.router)
-app.include_router(student.router)
+app.include_router(teacher_router)
+app.include_router(student_router)
+app.include_router(secretaire_router)
 
 @app.get("/")
 async def root():

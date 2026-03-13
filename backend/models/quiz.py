@@ -13,12 +13,17 @@ class DifficultyEnum(str, enum.Enum):
 
 # 2. Modèle Subject (doit être défini avant Quiz pour les relations si nécessaire, 
 # ou référencé par chaîne de caractères)
+ 
+
+# Dans ton fichier quiz.py existant, modifie la classe Subject :
 class Subject(Base):
     __tablename__ = "subjects"
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, nullable=False)
+    name = Column(String, nullable=False) # Retirer unique=True si "Maths" existe dans plusieurs filières
     
-    # Relation : Un sujet peut avoir plusieurs quiz
+    # Ajout du lien vers la Filière
+    filiere_id = Column(Integer, ForeignKey("filieres.id", ondelete="CASCADE"))
+    
     quizzes = relationship("Quiz", back_populates="subject")
 
 # 3. Modèle Quiz
@@ -35,6 +40,11 @@ class Quiz(Base):
     subject = relationship("Subject", back_populates="quizzes")
     questions = relationship("Question", back_populates="quiz", cascade="all, delete-orphan")
     # Si tu as une relation inverse dans User.py, assure-toi qu'elle correspond à creator_id
+
+    # @property
+    # def question_count(self):
+    #     print(f"le nombre de question pour les quiz{self.id} est {len(self.questions)}")
+    #     return len(self.questions)
 
 # 4. Modèle Question
 class Question(Base):
@@ -58,18 +68,31 @@ class Option(Base):
 
     question = relationship("Question", back_populates="options")
 
-# 6. Modèle Result
+
+
+    
+   
+    
+    
+   
+
+    # Relations simples (pas de back_populates nécessaire ici sauf si tu veux 
+    # voir les résultats depuis l'objet User)
+   
+
+# Dans ton fichier de modèles (ex: models/quiz.py)
+
 class Result(Base):
     __tablename__ = "results"
 
     id = Column(Integer, primary_key=True, index=True)
-    score = Column(Float, nullable=False)
+    score = Column(Float, nullable=False)  # Note sur 20 par exemple
+    correct_answers = Column(Integer, nullable=False, default=0) # Ajouté
+    total_questions = Column(Integer, nullable=False, default=0)  # Ajouté
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="CASCADE"))
-
-    # Relations simples (pas de back_populates nécessaire ici sauf si tu veux 
-    # voir les résultats depuis l'objet User)
     user = relationship("User")
     quiz = relationship("Quiz")
+
+  

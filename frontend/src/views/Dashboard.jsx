@@ -7,6 +7,9 @@ import StudentHome from "../views/student/StudentHome";
 import { getUserRole, getUsername } from '../utils/auth'
 import StudentExplore from "../views/student/StudentExplore";
 
+import SecretaireHome from "../views/secretaire/SecretaireHome"; // 1. Import du nouveau composant
+
+
 export default function Dashboard() {
   // On récupère le rôle et on le transforme immédiatement en minuscules pour la logique
   const [activeView, setActiveView] = useState("home");
@@ -16,6 +19,7 @@ export default function Dashboard() {
   // On utilise nos fonctions utilitaires
   const role = getUserRole();
   const userName = getUsername();
+
 
   // LOGIQUE DE RENDU
   const renderContent = () => {
@@ -44,6 +48,15 @@ export default function Dashboard() {
         case "results": return <div className="p-10 text-2xl font-black italic uppercase">Mes Résultats</div>;
         case "profile": return <div className="p-10 text-2xl font-black italic uppercase">Mon Profil</div>;
         default: return <StudentHome />;
+      }
+    }
+
+    // --- 2. LOGIQUE POUR SECRETAIRE ET ADMIN ---
+    if (role === "secretaire" || role === "admin") {
+      switch (activeView) {
+        case "home": return <SecretaireHome />;
+        // Tu pourras ajouter d'autres vues ici (ex: "stats", "validations")
+        default: return <SecretaireHome />;
       }
     }
 

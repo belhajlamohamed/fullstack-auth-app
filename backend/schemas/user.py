@@ -1,10 +1,12 @@
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional
+from datetime import datetime
 
 # Base commune pour éviter la répétition
 class UserBase(BaseModel):
     email: EmailStr
     username: str
+
 
 # 1. Schéma pour l'inscription
 class UserCreate(UserBase):
@@ -44,3 +46,26 @@ class EmailRequest(BaseModel):
 class PasswordResetConfirm(BaseModel):
     token: str
     new_password: str
+
+
+
+
+
+
+# Schéma pour les statistiques du Dashboard Secrétaire
+class UserStats(BaseModel):
+    totalStudents: int
+    pendingValidation: int
+    activeStudents: int
+
+# Schéma pour l'affichage d'un utilisateur dans la liste de validation
+class UserPending(BaseModel):
+    id: int
+    username: str
+    email: str
+    created_at: Optional[datetime] = None
+    level_name: Optional[str] = "N/A"
+    filiere_name: Optional[str] = "N/A"
+
+    class Config:
+        from_attributes = True # Permet à Pydantic de lire les objets SQLAlchemy

@@ -16,6 +16,7 @@ export default function StudentExplore() {
     const fetchAllQuizzes = async () => {
       try {
         const response = await api.get("/quizzes/all");
+        console.log(response.data)
         setQuizzes(response.data);
       } catch (error) {
         console.error("Erreur lors de la récupération des quiz:", error);
@@ -84,7 +85,7 @@ export default function StudentExplore() {
                   </div>
                   <div className="flex items-center gap-1.5 text-gray-500 text-[9px] font-black uppercase tracking-widest">
                     <Clock size={12} />
-                    <span>{quiz.questions_count || 0} Questions</span>
+                    <span>{quiz.question_count || 0} Questions</span>
                   </div>
                 </div>
 

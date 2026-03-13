@@ -1,16 +1,19 @@
-# from .user import UserCreate, UserResponse, UserLogin
-# from .quiz import QuizCreate, QuizResponse, SubjectResponse
-
-from schemas.user import UserCreate, UserUpdateForm, UserLogin, UserOut,PasswordChange,EmailRequest,PasswordResetConfirm
+# --- FICHIER : backend/schemas/__init__.py ---
+from schemas.user import (
+    UserCreate, UserUpdateForm, UserLogin, UserOut, 
+    PasswordChange, EmailRequest, PasswordResetConfirm
+)
 from schemas.quiz import (
-    QuizCreate, QuizResponse,ResultResponse,QuizBase,
-    SubjectResponse, QuizOut,
-    QuestionCreate, OptionBase,QuizFullResponse,AnswerSubmission,QuizSubmission,SubjectOut
+    QuizCreate, QuizResponse, QuizFullResponse, 
+    ResultResponse, QuizBase, QuestionCreate, 
+    OptionBase, AnswerSubmission, QuizSubmission, SubjectOut
 )
 
-# Nous ajouterons les schémas de Quiz ici plus tard
-__all__ = ["UserCreate", "UserUpdateForm", "UserLogin", "UserOut","PasswordChange", "QuestionCreate", "OptionBase","QuizFullResponse","AnswerSubmission","QuizSubmission","SubjectOut", "EmailRequest", "PasswordResetConfirm","QuizCreate", "QuizResponse", "SubjectResponse",""
-    
-             "QuestionCreate","OptionBase","QuizFullResponse","AnswerSubmission", "QuizSubmission","ResultResponse","QuizOut"]
-
+# On expose tout pour simplifier les imports dans les routers
+__all__ = [
+    "UserCreate", "UserUpdateForm", "UserLogin", "UserOut", "PasswordChange",
+    "EmailRequest", "PasswordResetConfirm", "QuizCreate", "QuizResponse", 
+    "QuizFullResponse", "ResultResponse", "QuizBase", "QuestionCreate", 
+    "OptionBase", "AnswerSubmission", "QuizSubmission", "SubjectOut"
+]
 
