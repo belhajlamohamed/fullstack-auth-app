@@ -20,7 +20,7 @@ export default function Login() {
       localStorage.setItem("access_token", access_token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      if (user.role.toLowerCase() === "teacher" || user.role.toLowerCase() === "student") {
+      if (user.role.toLowerCase() === "teacher" || user.role.toLowerCase() === "student" || user.role.toLowerCase() === "secretaire" || user.role.toLowerCase() === "admin") {
         navigate("/dashboard");
       } else {
         navigate("/login");

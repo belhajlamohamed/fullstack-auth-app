@@ -38,53 +38,67 @@ async def register(
     db: Session = Depends(get_db)
 ):
     # 1. Vérifier si l'utilisateur existe déjà
-    user_exists = db.query(models.User).filter(models.User.email == user_in.email).first()
+    user_exists = db.query(models.User).filter(
+        (models.User.email == user_in.email) | (models.User.username == user_in.username)
+    ).first()
+
     if user_exists:
-        raise HTTPException(status_code=400, detail="Cet email est déjà utilisé.")
+        raise HTTPException(
+            status_code=400, 
+            detail="Un utilisateur avec cet email ou ce pseudo existe déjà."
+        )
     
     # 2. Gestion et Sécurité du Rôle
-    db_role= user_in.role.lower() if user_in.role else "student"
+    role_str = user_in.role.lower() if user_in.role else "student"
 
-    if db_role == "admin":
+    if role_str == "admin":
         raise HTTPException(
             status_code=403, 
             detail="Création de compte administrateur interdite par cette voie."
         )
 
-    # Conversion en objet Enum pour SQLAlchemy (pour correspondre à ton models/user.py)
+    # Conversion en objet Enum pour SQLAlchemy
     try:
-        db_role = models.UserRole(db_role)
+        db_role = models.UserRole(role_str)
     except ValueError:
         db_role = models.UserRole.STUDENT
 
-    # 3. Hachage du mot de passe et création
-    # Note : hashed_password correspond au nom dans ton fichier models/user.py
+    # 3. Hachage du mot de passe
     hashed_pwd = hash_password(user_in.password)
     
+    # 4. Création de l'utilisateur avec les champs Secrétariat
     new_user = models.User(
         email=user_in.email,
         username=user_in.username,
         hashed_password=hashed_pwd, 
-        role=db_role  # On passe l'objet Enum ici
+        role=db_role,
+        # IMPORTANT : On met le statut en attente si c'est un étudiant
+        enrollment_status=models.EnrollmentStatus.PENDING_PAYMENT if db_role == models.UserRole.STUDENT else None,
+        # Liaison avec le niveau et la filière choisis dans Register.jsx
+        level_id=user_in.level_id if role_str == "student" else None,
+        filiere_id=user_in.filiere_id if role_str == "student" else None,
+        is_active=False  # Désactivé par défaut jusqu'à validation/vérification
     )
 
-    db.add(new_user)
     try:
+        db.add(new_user)
         db.commit()
         db.refresh(new_user)
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Erreur base de données : {str(e)}")
+        print(f"Erreur DB : {e}")
+        raise HTTPException(status_code=500, detail="Erreur lors de l'enregistrement en base de données.")
 
-    # 4. Token et Email
+    # 5. Token et Email de vérification
     token = create_verification_token(new_user.email)
     background_tasks.add_task(send_verification_email, new_user.email, token)
 
-    # Debug (en attendant un vrai serveur SMTP)
-    print(f"Lien de vérification pour {new_user.email} : http://localhost:8000/users/verify-email?token={token}")
+    # Debug console
+    print(f"--- NOUVEL ETUDIANT ---")
+    print(f"Email: {new_user.email} | Statut: {new_user.enrollment_status}")
+    print(f"Lien : http://localhost:8000/users/verify-email?token={token}")
 
     return new_user
-
 
 @router.get("/verify-email")
 def verify_email(token: str, db: Session = Depends(get_db)):

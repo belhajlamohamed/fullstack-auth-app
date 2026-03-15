@@ -21,35 +21,41 @@ def verify_secretaire_role(current_user: User = Depends(get_current_user)):
         )
     return current_user
 
-@router.get("/dashboard-stats", response_model=UserStats) # Ajoute le response_model
-def get_secretaire_stats(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(verify_secretaire_role)
-):
-    """Récupère les chiffres clés pour les StatCards du Dashboard"""
+@router.get("/secretaire-stats", response_model=UserStats)
+def get_secretaire_stats(db: Session = Depends(get_db)):
+    # On compte les étudiants
     total_students = db.query(User).filter(User.role == UserRole.STUDENT).count()
-    pending_validation = db.query(User).filter(
-        User.enrollment_status == EnrollmentStatus.PENDING_PAYMENT
-    ).count()
-    active_students = db.query(User).filter(
-        User.enrollment_status == EnrollmentStatus.ACTIVE
-    ).count()
+    
+    # ON AJOUTE LE COMPTE DES ENSEIGNANTS ICI
+    total_teachers = db.query(User).filter(User.role == UserRole.TEACHER).count()
+    
+    pending = db.query(User).filter(User.enrollment_status == EnrollmentStatus.PENDING_PAYMENT).count()
+    active = db.query(User).filter(User.is_active == True, User.role == UserRole.STUDENT).count()
 
     return {
         "totalStudents": total_students,
-        "pendingValidation": pending_validation,
-        "activeStudents": active_students
+        "totalTeachers": total_teachers,  # <--- Cette clé doit être envoyée
+        "pendingValidation": pending,
+        "activeStudents": active
     }
 
-@router.get("/pending-users", response_model=List[UserPending])
-def get_pending_users(
+
+@router.get("/pending-requests", response_model=List[UserPending])
+def get_pending_requests(
     db: Session = Depends(get_db),
     current_user: User = Depends(verify_secretaire_role)
 ):
     """Liste tous les étudiants qui attendent la validation de leur paiement"""
+    """
+    Remplace 'pending-users'. 
+    Récupère étudiants (en attente paiement) ET enseignants (inactifs).
+    """
+   
     pending_users = db.query(User).filter(
-        User.enrollment_status == EnrollmentStatus.PENDING_PAYMENT
+        (User.enrollment_status == EnrollmentStatus.PENDING_PAYMENT) | 
+        ((User.role == UserRole.TEACHER) & (User.is_active == False))
     ).all()
+
     
     # On enrichit la réponse avec les noms du niveau et de la filière
     results = []
@@ -64,24 +70,34 @@ def get_pending_users(
         })
     return results
 
+
 @router.post("/validate-user/{user_id}")
-def validate_student_access(
+def validate_user_access(
     user_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(verify_secretaire_role)
 ):
-    """Active le compte d'un étudiant après vérification du paiement"""
-    student = db.query(User).filter(User.id == user_id).first()
-    
-    if not student:
-        raise HTTPException(status_code=404, detail="Étudiant non trouvé")
-    
-    if student.role != UserRole.STUDENT:
-        raise HTTPException(status_code=400, detail="Seuls les étudiants peuvent être validés")
+   
 
-    # Mise à jour du statut
-    student.enrollment_status = EnrollmentStatus.ACTIVE
-    student.is_active = True
+    """Active le compte d'un utilisateur (Étudiant ou Enseignant)"""
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    # --- LOGIQUE ÉTUDIANT ---
+    if user.role == UserRole.STUDENT:
+        # On valide son paiement et on l'active
+        user.enrollment_status = EnrollmentStatus.ACTIVE
+        user.is_active = True
+    
+    # --- LOGIQUE ENSEIGNANT ---
+    elif user.role == UserRole.TEACHER:
+        # Pas de flux de paiement, on active juste le compte
+        user.is_active = True
+    else:
+        # Sécurité pour les autres rôles
+        raise HTTPException(status_code=400, detail="Ce type d'utilisateur ne peut pas être validé ici")
     
     db.commit()
-    return {"message": f"L'accès pour {student.username} a été activé avec succès"}
+    return {"message": f"Accès validé avec succès pour {user.username}"}

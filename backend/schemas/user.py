@@ -10,9 +10,11 @@ class UserBase(BaseModel):
 
 # 1. Schéma pour l'inscription
 class UserCreate(UserBase):
-   password: str
-   role: Optional[str] = "student" # Par défaut, on est élève
-
+    password: str
+    role: Optional[str] = "student"
+    # Ajoute ces deux lignes :
+    level_id: Optional[int] = None
+    filiere_id: Optional[int] = None
 
 # class UserCreate(UserBase):
 #     password: str = Field(..., min_length=8, description="Le mot de passe doit faire au moins 8 caractères")
@@ -55,8 +57,12 @@ class PasswordResetConfirm(BaseModel):
 # Schéma pour les statistiques du Dashboard Secrétaire
 class UserStats(BaseModel):
     totalStudents: int
+    totalTeachers: int  # <--- AJOUTE CETTE LIGNE
     pendingValidation: int
     activeStudents: int
+
+    class Config:
+        from_attributes = True
 
 # Schéma pour l'affichage d'un utilisateur dans la liste de validation
 class UserPending(BaseModel):

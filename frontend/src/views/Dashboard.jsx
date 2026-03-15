@@ -17,8 +17,12 @@ export default function Dashboard() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   // On utilise nos fonctions utilitaires
-  const role = getUserRole();
+  
+  const role = getUserRole()?.toLowerCase();
   const userName = getUsername();
+
+  console.log("--- DASHBOARD CHECK ---");
+  console.log("Rôle brut récupéré :", role);
 
 
   // LOGIQUE DE RENDU
@@ -52,7 +56,11 @@ export default function Dashboard() {
     }
 
     // --- 2. LOGIQUE POUR SECRETAIRE ET ADMIN ---
-    if (role === "secretaire" || role === "admin") {
+    if (role === "admin" || role === "secretaire") {
+
+      console.log("LOGIQUE ADMIN DÉTECTÉE"); // Ajoute ce log ICI
+     
+
       switch (activeView) {
         case "home": return <SecretaireHome />;
         // Tu pourras ajouter d'autres vues ici (ex: "stats", "validations")
